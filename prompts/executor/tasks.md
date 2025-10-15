@@ -1,0 +1,83 @@
+# Journey Executor Enhancement Tasks
+
+Generate and implement tasks according to prompts/executor/plan.md. Use [ ] to mark incomplete and [x] to mark completed as you work.
+
+1. [ ] Types: Extend shared TypeScript interfaces in src/types/index.ts
+   - 1.1 [ ] Add ExecutionLogEntry { timestamp: string; nodeId: string; nodeType: 'MESSAGE'|'DELAY'|'CONDITIONAL'; action: string; details?: unknown }
+   - 1.2 [ ] Add JourneyRun { runId; journeyId; patientId; currentNodeId; status; wakeUpAt; startedAt; completedAt; executionLog; errorMessage? }
+
+2. [ ] Data Model: Create JourneyRun Mongoose model in src/models/JourneyRun.ts
+   - 2.1 [ ] Define schema fields mirroring JourneyRun interface
+   - 2.2 [ ] Configure toJSON transform to output ISO strings for Date fields and omit internal _id/__v
+   - 2.3 [ ] Add indexes:
+     - 2.3.1 [ ] Unique index on runId
+     - 2.3.2 [ ] Compound index on { patientId, status, wakeUpAt }
+     - 2.3.3 [ ] (Optional) Index on { status, wakeUpAt } for recovery scans
+
+3. [ ] Executor Service: Implement src/services/journeyExecutor.ts
+   - 3.1 [ ] Timers registry: Map<string, NodeJS.Timeout> and helpers (set/clear/stopAll)
+   - 3.2 [ ] Persistence helpers: appendLog(runId, entry); setStatus(runId, status, patch)
+   - 3.3 [ ] Node map builder + validation (ensure referenced node IDs exist)
+   - 3.4 [ ] Core processing loop (while currentNodeId != null) with try/catch error handling
+     - 3.4.1 [ ] MESSAGE: stub-send via messageService, log action, advance to next_node_id
+     - 3.4.2 [ ] DELAY: compute wakeUpAt, persist status='waiting' and next currentNodeId, schedule setTimeout to resume
+     - 3.4.3 [ ] CONDITIONAL: evaluate condition using nodeProcessor helpers, log result, branch to appropriate next node
+     - 3.4.4 [ ] Completion: when currentNodeId === null, set status='completed', completedAt, clear timer, log COMPLETE
+     - 3.4.5 [ ] Failure: on error, set status='failed', completedAt, errorMessage, clear timer, log ERROR
+   - 3.5 [ ] Public API methods
+     - 3.5.1 [ ] startJourney(journeyId, patientId): create run (uuid), persist initial state, kick off processing
+     - 3.5.2 [ ] resumeJourney(runId): move from 'waiting' to 'active', clear wakeUpAt, continue processing
+     - 3.5.3 [ ] getRunStatus(runId): fetch and return JourneyRun (404 if not found)
+     - 3.5.4 [ ] getPatientRuns(patientId, status?): list runs sorted by startedAt desc
+     - 3.5.5 [ ] cancelRun(runId): clear timer (if any), set status='failed' with errorMessage='Cancelled by user'
+     - 3.5.6 [ ] recoverDueRuns(): resume all runs with status='waiting' and wakeUpAt <= now
+   - 3.6 [ ] Logging: prefix console logs with [RUN:<runId>] and node-type tags
+
+4. [ ] Controllers and Routes
+   - 4.1 [ ] Create src/controllers/runController.ts with handlers using executor
+     - 4.1.1 [ ] POST /api/journeys/:journeyId/start { patientId } → executor.startJourney → return JourneyRun
+     - 4.1.2 [ ] POST /api/runs/:runId/resume → executor.resumeJourney
+     - 4.1.3 [ ] GET /api/runs/:runId → executor.getRunStatus
+     - 4.1.4 [ ] GET /api/patients/:patientId/runs[?status=...] → executor.getPatientRuns
+     - 4.1.5 [ ] DELETE /api/runs/:runId → executor.cancelRun
+     - 4.1.6 [ ] Use try/catch and error middleware; consistent JSON error format
+   - 4.2 [ ] Create src/routes/runs.ts wiring endpoints to controller
+   - 4.3 [ ] Register runs router in src/index.ts (e.g., app.use('/api', runsRouter))
+   - 4.4 [ ] Update existing journey start handler to delegate to executor.startJourney and return full run record
+
+5. [ ] Startup and Shutdown Hooks
+   - 5.1 [ ] After DB connection in src/index.ts, call journeyExecutor.recoverDueRuns()
+   - 5.2 [ ] On server shutdown, call journeyExecutor.stopAllTimers() to avoid dangling timeouts (esp. for tests)
+
+6. [ ] Integration with Existing Services
+   - 6.1 [ ] Reuse nodeProcessor for condition evaluation and messageService for stubbed message sending
+   - 6.2 [ ] Ensure DELAY scheduling is orchestrated by executor (not nodeProcessor)
+
+7. [ ] Error Handling and Validation
+   - 7.1 [ ] Map not-found and conflict states to 404/409 in controllers; delegate to global errorHandler
+   - 7.2 [ ] Defensive validation of journey structure when building node map; fail fast on invalid references
+
+8. [ ] Testing
+   - 8.1 [ ] Unit tests for executor service
+     - 8.1.1 [ ] State transitions: active → waiting → active → completed
+     - 8.1.2 [ ] Error handling: missing node; invalid operator
+     - 8.1.3 [ ] Cancel behavior: sets status='failed' and clears timers
+   - 8.2 [ ] Integration tests with supertest
+     - 8.2.1 [ ] POST /api/journeys/:id/start returns JourneyRun and persists initial state
+     - 8.2.2 [ ] MESSAGE → DELAY → MESSAGE flow using short delay with jest fake timers
+     - 8.2.3 [ ] CONDITIONAL branching true/false by varying patient context
+     - 8.2.4 [ ] GET /api/patients/:id/runs with and without status filter
+     - 8.2.5 [ ] GET /api/runs/:runId reflects live changes
+     - 8.2.6 [ ] POST /api/runs/:runId/resume works only from 'waiting' (409 otherwise)
+   - 8.3 [ ] Test utilities/setup
+     - 8.3.1 [ ] Use jest.useFakeTimers() to control setTimeout
+     - 8.3.2 [ ] Configure in-memory MongoDB (mongodb-memory-server) or mock Mongoose as appropriate
+
+9. [ ] Documentation
+   - 9.1 [ ] Update README with new run-related endpoints and example usage
+   - 9.2 [ ] Document run status values and sample executionLog entries
+
+10. [ ] Non-Functional/Operational
+   - 10.1 [ ] Confirm necessary indexes exist and are used (status/wakeUpAt, patientId/status)
+   - 10.2 [ ] Ensure timers map operations are guarded to prevent duplicate resumes
+   - 10.3 [ ] Keep logs concise and tagged; ensure executionLog covers key events
