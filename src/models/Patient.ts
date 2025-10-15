@@ -17,8 +17,8 @@ const PatientSchema = new Schema<PatientDoc>({
   age: { type: Number, required: true, min: 0 },
   language: { type: String, required: true, enum: ['en', 'es'] },
   condition: { type: String, required: true, enum: ['hip_replacement', 'knee_replacement'] },
-}, { timestamps: true, toJSON: { virtuals: true, versionKey: false, transform: (_, ret) => {
-  ret.id = ret._id.toString();
+}, { timestamps: true, toJSON: { virtuals: true, versionKey: false, transform: (_: any, ret: any) => {
+  ret.id = (ret._id as any).toString();
   delete ret._id;
   return ret;
 }}});

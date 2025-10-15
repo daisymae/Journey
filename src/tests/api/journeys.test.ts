@@ -1,6 +1,26 @@
 import request from 'supertest';
 import createApp from '../../index';
 
+// Mock journeyExecutor to avoid DB interactions
+jest.mock('../../services/journeyExecutor', () => {
+  const fakeRun = {
+    runId: 'r1',
+    journeyId: 'j1',
+    patientId: 'p1',
+    currentNodeId: null,
+    status: 'completed',
+    wakeUpAt: null,
+    startedAt: new Date().toISOString(),
+    completedAt: new Date().toISOString(),
+    executionLog: [],
+  };
+  return {
+    journeyExecutor: {
+      startJourney: jest.fn().mockResolvedValue(fakeRun),
+    },
+  };
+});
+
 // In-memory mock for Journey model
 jest.mock('../../models/Journey', () => {
   type JourneyDoc = any;
@@ -41,10 +61,45 @@ jest.mock('../../models/Journey', () => {
   };
 });
 
-// Mock Patient model for start endpoint when patientId is used (we will pass patient context directly in tests)
-jest.mock('../../models/Patient', () => ({
-  Patient: {},
-}));
+// Mock Patient model with in-memory store for start endpoint
+jest.mock('../../models/Patient', () => {
+  type PatientDoc = any;
+  const store: PatientDoc[] = [];
+  let seq = 1;
+  const wrap = (obj: any) => ({
+    ...obj,
+    toJSON: () => obj,
+    id: obj.id,
+  });
+  return {
+    Patient: {
+      create: async (body: any) => {
+        const id = body.id || String(seq++);
+        const doc = { ...body, id };
+        store.push(doc);
+        return wrap(doc);
+      },
+      find: async () => store.map(wrap),
+      findById: async (id: string) => {
+        const doc = store.find((p) => p.id === id);
+        return doc ? wrap(doc) : null;
+      },
+      findByIdAndUpdate: async (id: string, body: any) => {
+        const idx = store.findIndex((p) => p.id === id);
+        if (idx === -1) return null;
+        const updated = { ...store[idx], ...body };
+        store[idx] = updated;
+        return wrap(updated);
+      },
+      findByIdAndDelete: async (id: string) => {
+        const idx = store.findIndex((p) => p.id === id);
+        if (idx === -1) return null;
+        const [removed] = store.splice(idx, 1);
+        return wrap(removed);
+      },
+    },
+  };
+});
 
 describe('Journeys API', () => {
   const app = createApp();
@@ -94,8 +149,9 @@ describe('Journeys API', () => {
     const res = await request(app)
       .post('/api/journeys/j1/start')
       .send({ patient: { id: 'p1', age: 50, language: 'en', condition: 'hip_replacement' } });
-    expect(res.status).toBe(202);
-    expect(res.body).toEqual({ status: 'started' });
+    expect(res.status).toBe(201);
+    expect(res.body).toHaveProperty('runId');
+    expect(res.body).toMatchObject({ journeyId: 'j1', patientId: 'p1' });
   });
 
   test('DELETE /api/journeys/:id - delete journey', async () => {

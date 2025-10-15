@@ -4,7 +4,9 @@ import { PORT } from './config';
 import { connectDB, disconnectDB } from './utils/database';
 import patientRoutes from './routes/patients';
 import journeyRoutes from './routes/journeys';
+import runsRoutes from './routes/runs';
 import { errorHandler } from './middleware/errorHandler';
+import { journeyExecutor } from './services/journeyExecutor';
 
 export function createApp() {
   const app = express();
@@ -13,6 +15,7 @@ export function createApp() {
 
   app.use('/api/patients', patientRoutes);
   app.use('/api/journeys', journeyRoutes);
+  app.use('/api', runsRoutes);
 
   // Health check
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
@@ -28,6 +31,11 @@ if (process.env.NODE_ENV !== 'test') {
       console.error('[ERROR][DB] Could not connect to MongoDB on startup', err);
     });
 
+    // Attempt to recover any overdue waiting runs on startup
+    await journeyExecutor.recoverDueRuns().catch((err) => {
+      console.error('[ERROR][EXECUTOR] Recovery failed on startup', err);
+    });
+
     const server = app.listen(PORT, () => {
       console.log(`[ENGINE] Server listening on port ${PORT}`);
     });
@@ -35,6 +43,8 @@ if (process.env.NODE_ENV !== 'test') {
     const shutdown = async (signal: string) => {
       console.log(`[ENGINE] Received ${signal}. Shutting down...`);
       server.close(async () => {
+        // Stop timers to avoid dangling timeouts
+        journeyExecutor.stopAllTimers();
         await disconnectDB();
         process.exit(0);
       });

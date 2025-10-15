@@ -3,6 +3,7 @@ import { Journey } from '../models/Journey';
 import { Patient } from '../models/Patient';
 import { executeJourney } from '../services/journeyEngine';
 import { PatientContext } from '../types';
+import { journeyExecutor } from '../services/journeyExecutor';
 
 export async function createJourney(req: Request, res: Response, next: NextFunction) {
   try {
@@ -58,21 +59,23 @@ export async function startJourney(req: Request, res: Response, next: NextFuncti
     const journey = await Journey.findById(req.params.id);
     if (!journey) return res.status(404).json({ error: 'Not Found', code: 'NOT_FOUND', details: { resource: 'Journey' } });
 
-    let patientCtx: PatientContext | null = null;
     const { patientId, patient } = req.body || {};
+    let pid: string;
 
-    if (patient) {
-      patientCtx = patient as PatientContext;
-    } else if (patientId) {
+    if (patientId) {
       const p = await Patient.findById(patientId);
       if (!p) return res.status(404).json({ error: 'Not Found', code: 'NOT_FOUND', details: { resource: 'Patient' } });
-      patientCtx = { id: p.id, age: p.age, language: p.language as any, condition: p.condition as any };
+      pid = p.id;
+    } else if (patient) {
+      // Create a transient patient record to back this run
+      const created = await Patient.create(patient);
+      pid = created.id;
     } else {
       return res.status(400).json({ error: 'Bad Request', code: 'MISSING_PATIENT', details: { message: 'Provide patientId or patient context' } });
     }
 
-    executeJourney(journey.toJSON(), patientCtx);
-    res.status(202).json({ status: 'started' });
+    const run = await journeyExecutor.startJourney(journey.id, pid);
+    res.status(201).json(run);
   } catch (err) {
     next(err);
   }

@@ -46,3 +46,24 @@ export interface PatientContext {
 
 // Helper types
 export type NodeById = Record<string, JourneyNode>;
+
+export interface ExecutionLogEntry {
+  timestamp: string; // ISO 8601
+  nodeId: string;
+  nodeType: 'MESSAGE' | 'DELAY' | 'CONDITIONAL';
+  action: string;
+  details?: unknown;
+}
+
+export interface JourneyRun {
+  runId: string;
+  journeyId: string;
+  patientId: string;
+  currentNodeId: string | null;
+  status: 'active' | 'waiting' | 'completed' | 'failed';
+  wakeUpAt: string | null; // ISO 8601
+  startedAt: string; // ISO 8601
+  completedAt: string | null; // ISO 8601
+  executionLog: ExecutionLogEntry[];
+  errorMessage?: string;
+}

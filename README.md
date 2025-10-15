@@ -45,7 +45,13 @@ Base URL: /api
   - POST /api/journeys — Create
   - PUT /api/journeys/:id — Update
   - DELETE /api/journeys/:id — Delete
-  - POST /api/journeys/:id/start — Start execution for a patient/context
+  - POST /api/journeys/:id/start — Start a persistent run for a patient (body: { patientId } or { patient }) → returns JourneyRun
+
+- Runs
+  - GET /api/runs/:runId — Get run status (JourneyRun)
+  - POST /api/runs/:runId/resume — Resume a waiting run
+  - GET /api/patients/:patientId/runs[?status=active|waiting|completed|failed] — List runs for a patient
+  - DELETE /api/runs/:runId — Cancel a run (marks as failed with errorMessage)
 
 - Patients
   - GET /api/patients — List all
@@ -108,3 +114,21 @@ Base URL: /api
 - All side effects are stubbed with console.log (prefixes: [ACTION], [DELAY], [CONDITIONAL], [ENGINE], [API], [DB], [ERROR])
 - DELAY nodes use setTimeout; tests use Jest fake timers.
 - In tests, the Express app is created via createApp() without starting a server or connecting to a real DB.
+
+## JourneyRun
+A JourneyRun persists the execution state of a journey for a patient.
+
+Status values:
+- active: Currently processing a node.
+- waiting: Paused on a DELAY; will resume at wakeUpAt.
+- completed: Journey reached the end.
+- failed: Journey encountered an error or was cancelled.
+
+Example executionLog entry:
+{
+  "timestamp": "2025-01-01T12:00:00.000Z",
+  "nodeId": "c1",
+  "nodeType": "CONDITIONAL",
+  "action": "Evaluated age > 50 => true",
+  "details": { "result": true }
+}
