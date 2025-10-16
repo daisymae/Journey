@@ -26,9 +26,9 @@ function createApp() {
     const app = (0, express_1.default)();
     app.use((0, cors_1.default)());
     app.use(express_1.default.json());
-    app.use('/api/patients', patients_1.default);
-    app.use('/api/journeys', journeys_1.default);
-    app.use('/api', runs_1.default);
+    app.use('/patients', patients_1.default);
+    app.use('/journeys', journeys_1.default);
+    app.use('/journeys', runs_1.default);
     // Health check
     app.get('/health', (_req, res) => res.json({ status: 'ok' }));
     app.use(errorHandler_1.errorHandler);

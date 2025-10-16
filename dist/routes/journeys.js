@@ -9,5 +9,5 @@ router.post('/', validation_1.validateJourney, journeyController_1.createJourney
 router.get('/:id', journeyController_1.getJourney);
 router.put('/:id', validation_1.validateJourney, journeyController_1.updateJourney);
 router.delete('/:id', journeyController_1.deleteJourney);
-router.post('/:id/start', journeyController_1.startJourney);
+router.post('/:journeyId/trigger', journeyController_1.startJourney);
 exports.default = router;

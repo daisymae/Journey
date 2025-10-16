@@ -13,9 +13,9 @@ export function createApp() {
   app.use(cors());
   app.use(express.json());
 
-  app.use('/api/patients', patientRoutes);
-  app.use('/api/journeys', journeyRoutes);
-  app.use('/api', runsRoutes);
+  app.use('/patients', patientRoutes);
+  app.use('/journeys', journeyRoutes);
+  app.use('/journeys', runsRoutes);
 
   // Health check
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));

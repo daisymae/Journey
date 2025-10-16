@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.journeyExecutor = void 0;
-const uuid_1 = require("uuid");
+const crypto_1 = require("crypto");
 const Journey_1 = require("../models/Journey");
 const Patient_1 = require("../models/Patient");
 const JourneyRun_1 = require("../models/JourneyRun");
@@ -176,7 +176,7 @@ class JourneyExecutor {
     }
     startJourney(journeyId, patientId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const runId = (0, uuid_1.v4)();
+            const runId = (typeof crypto_1.randomUUID === 'function') ? (0, crypto_1.randomUUID)() : Math.random().toString(36).slice(2) + Date.now().toString(36);
             const startedAt = new Date();
             // Validate journey and patient exist first
             const journeyDoc = yield Journey_1.Journey.findById(journeyId);

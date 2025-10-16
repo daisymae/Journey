@@ -56,7 +56,7 @@ export async function deleteJourney(req: Request, res: Response, next: NextFunct
 
 export async function startJourney(req: Request, res: Response, next: NextFunction) {
   try {
-    const journey = await Journey.findById(req.params.id);
+    const journey = await Journey.findById(req.params.journeyId);
     if (!journey) return res.status(404).json({ error: 'Not Found', code: 'NOT_FOUND', details: { resource: 'Journey' } });
 
     const { patientId, patient } = req.body || {};

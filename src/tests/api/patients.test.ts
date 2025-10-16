@@ -46,44 +46,44 @@ describe('Patients API', () => {
 
   const validPatient = { id: 'p1', age: 45, language: 'en', condition: 'knee_replacement' };
 
-  test('POST /api/patients - validation errors', async () => {
-    const res = await request(app).post('/api/patients').send({ age: 'x', language: 'en', condition: 'knee_replacement' });
+  test('POST /patients - validation errors', async () => {
+    const res = await request(app).post('/patients').send({ age: 'x', language: 'en', condition: 'knee_replacement' });
     expect(res.status).toBe(400);
     expect(res.body).toMatchObject({ code: 'BAD_REQUEST' });
   });
 
-  test('POST /api/patients - create patient (valid)', async () => {
-    const res = await request(app).post('/api/patients').send(validPatient);
+  test('POST /patients - create patient (valid)', async () => {
+    const res = await request(app).post('/patients').send(validPatient);
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ id: 'p1', age: 45 });
   });
 
-  test('GET /api/patients - list', async () => {
-    const res = await request(app).get('/api/patients');
+  test('GET /patients - list', async () => {
+    const res = await request(app).get('/patients');
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBe(1);
   });
 
-  test('GET /api/patients/:id - get by id', async () => {
-    const res = await request(app).get('/api/patients/p1');
+  test('GET /patients/:id - get by id', async () => {
+    const res = await request(app).get('/patients/p1');
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ id: 'p1' });
   });
 
-  test('PUT /api/patients/:id - update', async () => {
-    const res = await request(app).put('/api/patients/p1').send({ ...validPatient, age: 46 });
+  test('PUT /patients/:id - update', async () => {
+    const res = await request(app).put('/patients/p1').send({ ...validPatient, age: 46 });
     expect(res.status).toBe(200);
     expect(res.body.age).toBe(46);
   });
 
-  test('DELETE /api/patients/:id - delete', async () => {
-    const res = await request(app).delete('/api/patients/p1');
+  test('DELETE /patients/:id - delete', async () => {
+    const res = await request(app).delete('/patients/p1');
     expect(res.status).toBe(204);
   });
 
-  test('GET /api/patients/:id - 404 after delete', async () => {
-    const res = await request(app).get('/api/patients/p1');
+  test('GET /patients/:id - 404 after delete', async () => {
+    const res = await request(app).get('/patients/p1');
     expect(res.status).toBe(404);
     expect(res.body).toMatchObject({ code: 'NOT_FOUND' });
   });

@@ -113,54 +113,54 @@ describe('Journeys API', () => {
     ],
   };
 
-  test('POST /api/journeys - create journey (valid)', async () => {
-    const res = await request(app).post('/api/journeys').send(validJourney);
+  test('POST /journeys - create journey (valid)', async () => {
+    const res = await request(app).post('/journeys').send(validJourney);
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ id: 'j1', name: 'Test Journey' });
   });
 
-  test('GET /api/journeys - list journeys', async () => {
-    const res = await request(app).get('/api/journeys');
+  test('GET /journeys - list journeys', async () => {
+    const res = await request(app).get('/journeys');
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBeGreaterThan(0);
   });
 
-  test('GET /api/journeys/:id - get journey by id', async () => {
-    const res = await request(app).get('/api/journeys/j1');
+  test('GET /journeys/:id - get journey by id', async () => {
+    const res = await request(app).get('/journeys/j1');
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ id: 'j1' });
   });
 
-  test('PUT /api/journeys/:id - update journey', async () => {
-    const res = await request(app).put('/api/journeys/j1').send({ ...validJourney, name: 'Updated' });
+  test('PUT /journeys/:id - update journey', async () => {
+    const res = await request(app).put('/journeys/j1').send({ ...validJourney, name: 'Updated' });
     expect(res.status).toBe(200);
     expect(res.body.name).toBe('Updated');
   });
 
-  test('POST /api/journeys - validation error (missing nodes)', async () => {
+  test('POST /journeys - validation error (missing nodes)', async () => {
     const bad = { id: 'bad', name: 'Bad', start_node_id: 'x', nodes: [] };
-    const res = await request(app).post('/api/journeys').send(bad);
+    const res = await request(app).post('/journeys').send(bad);
     expect(res.status).toBe(400);
     expect(res.body).toMatchObject({ code: 'BAD_REQUEST' });
   });
 
-  test('POST /api/journeys/:id/start - starts journey for patient context', async () => {
+  test('POST /journeys/:journeyId/trigger - starts journey for patient context', async () => {
     const res = await request(app)
-      .post('/api/journeys/j1/start')
+      .post('/journeys/j1/trigger')
       .send({ patient: { id: 'p1', age: 50, language: 'en', condition: 'hip_replacement' } });
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty('runId');
     expect(res.body).toMatchObject({ journeyId: 'j1', patientId: 'p1' });
   });
 
-  test('DELETE /api/journeys/:id - delete journey', async () => {
-    const res = await request(app).delete('/api/journeys/j1');
+  test('DELETE /journeys/:id - delete journey', async () => {
+    const res = await request(app).delete('/journeys/j1');
     expect(res.status).toBe(204);
   });
 
-  test('GET /api/journeys/:id - 404 after delete', async () => {
-    const res = await request(app).get('/api/journeys/j1');
+  test('GET /journeys/:id - 404 after delete', async () => {
+    const res = await request(app).get('/journeys/j1');
     expect(res.status).toBe(404);
     expect(res.body).toMatchObject({ code: 'NOT_FOUND' });
   });

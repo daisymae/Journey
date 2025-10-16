@@ -3,13 +3,9 @@ import { cancelRun, getRun, listPatientRuns, resumeRun, startJourneyRun } from '
 
 const router = Router();
 
-// Start a run for a journey
-router.post('/journeys/:journeyId/start', startJourneyRun);
-
-// Run lifecycle
+// Run lifecycle - all under /journeys/runs
 router.post('/runs/:runId/resume', resumeRun);
 router.get('/runs/:runId', getRun);
-router.get('/patients/:patientId/runs', listPatientRuns);
 router.delete('/runs/:runId', cancelRun);
 
 export default router;

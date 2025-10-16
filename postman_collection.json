@@ -1,0 +1,579 @@
+{
+	"info": {
+		"_postman_id": "journey-api-collection",
+		"name": "Journey API - Demo Collection",
+		"description": "Demonstrates the core Journey API workflow: creating journeys, triggering execution, and monitoring run status.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Create Journey - Simple Message Flow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has journey id\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.collectionVariables.set(\"journey_id_simple\", jsonData.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Simple Welcome Journey\",\n  \"start_node_id\": \"welcome\",\n  \"nodes\": [\n    {\n      \"id\": \"welcome\",\n      \"type\": \"MESSAGE\",\n      \"message\": \"Welcome to your recovery journey!\",\n      \"next_node_id\": \"followup\"\n    },\n    {\n      \"id\": \"followup\",\n      \"type\": \"MESSAGE\",\n      \"message\": \"We're here to support you every step of the way.\",\n      \"next_node_id\": null\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/journeys",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"journeys"
+					]
+				},
+				"description": "Creates a simple journey with two MESSAGE nodes that execute sequentially."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Create Journey - With Conditional Logic",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has journey id\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.collectionVariables.set(\"journey_id_conditional\", jsonData.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Age-Based Recovery Journey\",\n  \"start_node_id\": \"start\",\n  \"nodes\": [\n    {\n      \"id\": \"start\",\n      \"type\": \"MESSAGE\",\n      \"message\": \"Welcome! Let's customize your recovery plan.\",\n      \"next_node_id\": \"age_check\"\n    },\n    {\n      \"id\": \"age_check\",\n      \"type\": \"CONDITIONAL\",\n      \"condition\": {\n        \"field\": \"age\",\n        \"operator\": \">=\",\n        \"value\": 60\n      },\n      \"on_true_next_node_id\": \"senior_message\",\n      \"on_false_next_node_id\": \"adult_message\"\n    },\n    {\n      \"id\": \"senior_message\",\n      \"type\": \"MESSAGE\",\n      \"message\": \"We've prepared a gentle recovery plan designed for seniors.\",\n      \"next_node_id\": null\n    },\n    {\n      \"id\": \"adult_message\",\n      \"type\": \"MESSAGE\",\n      \"message\": \"Your recovery plan includes moderate exercises.\",\n      \"next_node_id\": null\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/journeys",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"journeys"
+					]
+				},
+				"description": "Creates a journey with a CONDITIONAL node that branches based on patient age (>= 60)."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Create Journey - With Delay",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has journey id\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.collectionVariables.set(\"journey_id_delay\", jsonData.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Delayed Follow-Up Journey\",\n  \"start_node_id\": \"initial\",\n  \"nodes\": [\n    {\n      \"id\": \"initial\",\n      \"type\": \"MESSAGE\",\n      \"message\": \"Your surgery is scheduled. We'll check in with you soon.\",\n      \"next_node_id\": \"wait_5_seconds\"\n    },\n    {\n      \"id\": \"wait_5_seconds\",\n      \"type\": \"DELAY\",\n      \"duration_seconds\": 5,\n      \"next_node_id\": \"followup\"\n    },\n    {\n      \"id\": \"followup\",\n      \"type\": \"MESSAGE\",\n      \"message\": \"How are you feeling after the procedure?\",\n      \"next_node_id\": null\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/journeys",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"journeys"
+					]
+				},
+				"description": "Creates a journey with a DELAY node (5 seconds for demo purposes). The run will pause and automatically resume after the delay."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Trigger Journey - Inline Patient (Senior)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has runId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('runId');",
+							"    pm.expect(jsonData.status).to.be.oneOf(['active', 'waiting', 'completed']);",
+							"    pm.collectionVariables.set(\"run_id_senior\", jsonData.runId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Ensure we have a journey_id from previous request",
+							"if (!pm.collectionVariables.get(\"journey_id_conditional\")) {",
+							"    throw new Error(\"Please run 'Create Journey - With Conditional Logic' first\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"patient\": {\n    \"age\": 65,\n    \"language\": \"en\",\n    \"condition\": \"hip_replacement\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/journeys/{{journey_id_conditional}}/trigger",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"journeys",
+						"{{journey_id_conditional}}",
+						"trigger"
+					]
+				},
+				"description": "Triggers the conditional journey with an inline patient object (age 65). This should take the 'senior' branch."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Trigger Journey - Inline Patient (Adult)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has runId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('runId');",
+							"    pm.collectionVariables.set(\"run_id_adult\", jsonData.runId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if (!pm.collectionVariables.get(\"journey_id_conditional\")) {",
+							"    throw new Error(\"Please run 'Create Journey - With Conditional Logic' first\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"patient\": {\n    \"age\": 45,\n    \"language\": \"en\",\n    \"condition\": \"knee_replacement\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/journeys/{{journey_id_conditional}}/trigger",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"journeys",
+						"{{journey_id_conditional}}",
+						"trigger"
+					]
+				},
+				"description": "Triggers the conditional journey with an inline patient object (age 45). This should take the 'adult' branch."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Trigger Journey - With Delay",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has runId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('runId');",
+							"    pm.collectionVariables.set(\"run_id_delay\", jsonData.runId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if (!pm.collectionVariables.get(\"journey_id_delay\")) {",
+							"    throw new Error(\"Please run 'Create Journey - With Delay' first\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"patient\": {\n    \"age\": 52,\n    \"language\": \"en\",\n    \"condition\": \"hip_replacement\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/journeys/{{journey_id_delay}}/trigger",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"journeys",
+						"{{journey_id_delay}}",
+						"trigger"
+					]
+				},
+				"description": "Triggers the journey with a 5-second delay. Check the run status immediately (should be 'waiting'), then again after 5+ seconds (should be 'completed')."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Get Run Status - Senior Patient",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains execution log\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('executionLog');",
+							"    pm.expect(jsonData.executionLog).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Status is completed\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.equal('completed');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if (!pm.collectionVariables.get(\"run_id_senior\")) {",
+							"    throw new Error(\"Please run 'Trigger Journey - Inline Patient (Senior)' first\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/journeys/runs/{{run_id_senior}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"journeys",
+						"runs",
+						"{{run_id_senior}}"
+					]
+				},
+				"description": "Retrieves the run status for the senior patient. Should show the journey took the 'senior_message' branch."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Get Run Status - Adult Patient",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains execution log\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('executionLog');",
+							"    pm.expect(jsonData.executionLog).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Status is completed\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.equal('completed');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if (!pm.collectionVariables.get(\"run_id_adult\")) {",
+							"    throw new Error(\"Please run 'Trigger Journey - Inline Patient (Adult)' first\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/journeys/runs/{{run_id_adult}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"journeys",
+						"runs",
+						"{{run_id_adult}}"
+					]
+				},
+				"description": "Retrieves the run status for the adult patient. Should show the journey took the 'adult_message' branch."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Get Run Status - Delayed Run (Check While Waiting)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains wakeUpAt when waiting\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.status === 'waiting') {",
+							"        pm.expect(jsonData).to.have.property('wakeUpAt');",
+							"        pm.expect(jsonData.wakeUpAt).to.not.be.null;",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if (!pm.collectionVariables.get(\"run_id_delay\")) {",
+							"    throw new Error(\"Please run 'Trigger Journey - With Delay' first\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/journeys/runs/{{run_id_delay}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"journeys",
+						"runs",
+						"{{run_id_delay}}"
+					]
+				},
+				"description": "Checks the status of the delayed run. If called immediately after trigger, status should be 'waiting' with a wakeUpAt timestamp. After 5+ seconds, status should be 'completed'."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Get Run Status - After Delay Completes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Status is completed after delay\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.equal('completed');",
+							"    pm.expect(jsonData.completedAt).to.not.be.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if (!pm.collectionVariables.get(\"run_id_delay\")) {",
+							"    throw new Error(\"Please run 'Trigger Journey - With Delay' first\");",
+							"}",
+							"",
+							"// Wait 6 seconds before checking (delay is 5 seconds)",
+							"setTimeout(function(){}, 6000);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/journeys/runs/{{run_id_delay}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"journeys",
+						"runs",
+						"{{run_id_delay}}"
+					]
+				},
+				"description": "Wait 6+ seconds after triggering the delayed journey, then run this request. The status should now be 'completed'."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "journey_id_simple",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "journey_id_conditional",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "journey_id_delay",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "run_id_senior",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "run_id_adult",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "run_id_delay",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

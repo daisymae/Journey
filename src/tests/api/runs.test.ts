@@ -154,44 +154,44 @@ describe('Runs API', () => {
 
   test('Start run returns JourneyRun and persists initial state (mocked)', async () => {
     // Create a journey and patient
-    await request(app).post('/api/journeys').send({ id: 'j-start', name: 'J', start_node_id: 'n1', nodes: [{ id: 'n1', type: 'MESSAGE', message: 'Hi', next_node_id: null }] });
-    await request(app).post('/api/patients').send({ id: 'p-start', age: 40, language: 'en', condition: 'hip_replacement' });
+    await request(app).post('/journeys').send({ id: 'j-start', name: 'J', start_node_id: 'n1', nodes: [{ id: 'n1', type: 'MESSAGE', message: 'Hi', next_node_id: null }] });
+    await request(app).post('/patients').send({ id: 'p-start', age: 40, language: 'en', condition: 'hip_replacement' });
 
-    const res = await request(app).post('/api/journeys/j-start/start').send({ patientId: 'p-start' });
+    const res = await request(app).post('/journeys/j-start/trigger').send({ patientId: 'p-start' });
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty('runId');
     expect(res.body).toMatchObject({ journeyId: 'j-start', patientId: 'p-start', status: 'active' });
   });
 
   test('Get run status reflects data from executor (mocked)', async () => {
-    const start = await request(app).post('/api/journeys/j-start/start').send({ patientId: 'p-start' });
+    const start = await request(app).post('/journeys/j-start/trigger').send({ patientId: 'p-start' });
     const runId = start.body.runId;
-    const res = await request(app).get(`/api/runs/${runId}`);
+    const res = await request(app).get(`/journeys/runs/${runId}`);
     expect(res.status).toBe(200);
     expect(res.body.runId).toBe(runId);
   });
 
   test('List patient runs', async () => {
-    const res = await request(app).get('/api/patients/p-start/runs');
+    const res = await request(app).get('/patients/p-start/runs');
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
 
   test('Resume run returns 409 when not waiting (mocked)', async () => {
-    const start = await request(app).post('/api/journeys/j-start/start').send({ patientId: 'p-start' });
+    const start = await request(app).post('/journeys/j-start/trigger').send({ patientId: 'p-start' });
     const runId = start.body.runId;
-    const res = await request(app).post(`/api/runs/${runId}/resume`).send();
+    const res = await request(app).post(`/journeys/runs/${runId}/resume`).send();
     expect(res.status).toBe(409);
     expect(res.body).toMatchObject({ code: 'CONFLICT' });
   });
 
   test('Cancel run', async () => {
-    const start = await request(app).post('/api/journeys/j-start/start').send({ patientId: 'p-start' });
+    const start = await request(app).post('/journeys/j-start/trigger').send({ patientId: 'p-start' });
     const runId = start.body.runId;
-    const res = await request(app).delete(`/api/runs/${runId}`);
+    const res = await request(app).delete(`/journeys/runs/${runId}`);
     expect(res.status).toBe(202);
     // Optionally get status after cancel
-    const get = await request(app).get(`/api/runs/${runId}`);
+    const get = await request(app).get(`/journeys/runs/${runId}`);
     expect(get.body.status).toBe('failed');
   });
 });

@@ -83,7 +83,7 @@ function deleteJourney(req, res, next) {
 function startJourney(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const journey = yield Journey_1.Journey.findById(req.params.id);
+            const journey = yield Journey_1.Journey.findById(req.params.journeyId);
             if (!journey)
                 return res.status(404).json({ error: 'Not Found', code: 'NOT_FOUND', details: { resource: 'Journey' } });
             const { patientId, patient } = req.body || {};

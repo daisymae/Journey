@@ -9,6 +9,6 @@ router.post('/', validateJourney, createJourney);
 router.get('/:id', getJourney);
 router.put('/:id', validateJourney, updateJourney);
 router.delete('/:id', deleteJourney);
-router.post('/:id/start', startJourney);
+router.post('/:journeyId/trigger', startJourney);
 
 export default router;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1760557212830" clover="3.2.0">
-  <project timestamp="1760557212830" name="All files">
+<coverage generated="1760559326398" clover="3.2.0">
+  <project timestamp="1760559326398" name="All files">
     <metrics statements="527" coveredstatements="370" conditionals="258" coveredconditionals="126" methods="85" coveredmethods="51" elements="870" coveredelements="547" complexity="0" loc="527" ncloc="527" packages="8" files="18" classes="18"/>
     <package name="src">
       <metrics statements="37" coveredstatements="21" conditionals="1" coveredconditionals="0" methods="13" coveredmethods="1"/>
@@ -321,29 +321,29 @@
         <line num="14" count="3" type="stmt"/>
       </file>
       <file name="patients.ts" path="C:\Users\corcutt\WebstormProjects\Journey\src\routes\patients.ts">
-        <metrics statements="10" coveredstatements="10" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <metrics statements="12" coveredstatements="12" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="3" type="stmt"/>
         <line num="2" count="3" type="stmt"/>
         <line num="3" count="3" type="stmt"/>
-        <line num="5" count="3" type="stmt"/>
-        <line num="7" count="3" type="stmt"/>
+        <line num="4" count="3" type="stmt"/>
+        <line num="6" count="3" type="stmt"/>
         <line num="8" count="3" type="stmt"/>
         <line num="9" count="3" type="stmt"/>
-        <line num="10" count="3" type="stmt"/>
-        <line num="11" count="3" type="stmt"/>
-        <line num="13" count="3" type="stmt"/>
-      </file>
-      <file name="runs.ts" path="C:\Users\corcutt\WebstormProjects\Journey\src\routes\runs.ts">
-        <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="1" count="3" type="stmt"/>
-        <line num="2" count="3" type="stmt"/>
-        <line num="4" count="3" type="stmt"/>
-        <line num="7" count="3" type="stmt"/>
         <line num="10" count="3" type="stmt"/>
         <line num="11" count="3" type="stmt"/>
         <line num="12" count="3" type="stmt"/>
         <line num="13" count="3" type="stmt"/>
         <line num="15" count="3" type="stmt"/>
+      </file>
+      <file name="runs.ts" path="C:\Users\corcutt\WebstormProjects\Journey\src\routes\runs.ts">
+        <metrics statements="7" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="2" count="3" type="stmt"/>
+        <line num="4" count="3" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
+        <line num="8" count="3" type="stmt"/>
+        <line num="9" count="3" type="stmt"/>
+        <line num="11" count="3" type="stmt"/>
       </file>
     </package>
     <package name="src.services">
